@@ -2,7 +2,7 @@ require 'redmine'
 
 require_dependency 'watcher_groups/views_issues_hook'
 require_dependency 'watcher_groups_helper' 
-
+require_dependency 'watcher_groups_issue_hook'
 Rails.logger.info 'Starting Watcher Groups plugin for Redmine'
  
 
