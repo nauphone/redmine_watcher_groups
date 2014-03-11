@@ -16,6 +16,20 @@ class WatcherGroupsController < ApplicationController
            :limit => 1).blank?
           # insert directly into table to avoit user type checking
           Watcher.connection.execute("INSERT INTO #{Watcher.table_name} (user_id, watchable_id, watchable_type) VALUES (#{group_id}, #{@watched.id}, '#{@watched.class.name}')")
+          if params[:object_type] == 'issue'
+            issue = Issue.find(params[:object_id])
+            group_users = Group.find(group_id).users
+            group_users.each do |user|
+              note = "Watcher #{user.name} was added"
+              journal = Journal.new(:journalized => issue, :user => user, :notes => note, :notify => false, :is_system_note=> true)
+              journal.save
+              if Setting.notified_events.include?('issue_updated') ||
+                          (Setting.notified_events.include?('issue_note_added') && journal.notes.present?)
+                Mailer.watcher_add(journal, user.mail).deliver
+              end
+            end
+          end
+
         end
       end
     end
