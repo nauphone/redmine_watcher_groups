@@ -6,6 +6,7 @@ module WatcherGroupsIssuePatch
     base.class_eval do
       alias_method_chain :notified_watchers , :groups
       alias_method_chain :watched_by? , :groups
+      alias_method_chain :watcher_users, :users
     end
   end
 
@@ -35,7 +36,7 @@ module WatcherGroupsIssuePatch
       groups.each do |group|
         self.add_watcher_group(group)
       end
-    end                
+    end
 
     # Returns an array of users that are proposed as watchers
     def addable_watcher_groups
@@ -74,7 +75,6 @@ module WatcherGroupsIssuePatch
     end
 
   end
-  
 
   module InstanceMethods
     def notified_watchers_with_groups
@@ -83,15 +83,19 @@ module WatcherGroupsIssuePatch
       w = Watcher.find(:all, :conditions => "watchable_type='#{self.class}' and watchable_id = #{self.id}")
       groups = Group.find_all_by_id(w.map(&:user_id))
 
-      groups.each do |p|  
-          group_users = p.users.active
+      groups.each do |p|
+          group_users = p.users
           group_users.reject! {|user| user.mail.blank? || user.mail_notification == 'none'}
           if respond_to?(:visible?)
             group_users.reject! {|user| !visible?(user)}
-          end             
+          end
           notified += group_users
       end
-      notified += notified_watchers_without_groups
+      notified += watcher_users
+      notified.reject! {|user| user.mail.blank? || user.mail_notification == 'none'}
+      if respond_to?(:visible?)
+        notified.reject! {|user| !visible?(user)}
+      end
       notified.uniq
     end
 
@@ -100,6 +104,14 @@ module WatcherGroupsIssuePatch
         return true if user.is_or_belongs_to?(group)
       end if self.id?
       watched_by_without_groups?(user)
+    end
+
+    def watcher_users_with_users
+      users = watcher_users_without_users
+      watcher_groups.each do |g|
+        users += g.users
+      end
+      users.uniq
     end
   end
 end
