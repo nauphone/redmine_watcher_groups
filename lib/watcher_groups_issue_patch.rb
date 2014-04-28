@@ -110,7 +110,7 @@ module WatcherGroupsIssuePatch
       users = watcher_users_without_users
       watcher_groups.each do |g|
         users += g.users
-      end
+      end if self.id?
       users.uniq
     end
   end
