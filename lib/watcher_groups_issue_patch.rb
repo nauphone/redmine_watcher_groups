@@ -32,7 +32,8 @@ module WatcherGroupsIssuePatch
 
     def watcher_groups_ids=(group_ids)
       groups = group_ids.collect {|group_id| Group.find(group_id) if Group.find(group_id).is_a?(Group)  }
-      Watcher.delete_all "watchable_type = '#{self.class}' AND watchable_id = #{self.id}"
+      user_ids = groups.map(&:users).flatten.compact.uniq.map(&:id)
+      Watcher.delete_all "watchable_type = '#{self.class}' AND watchable_id = #{self.id} AND user_id IN (#{user_ids.join(',')})"
       groups.each do |group|
         self.add_watcher_group(group)
       end
