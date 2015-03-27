@@ -1,8 +1,8 @@
 class WatcherGroupsController < ApplicationController
 
+  helper :watchers
+  include WatchersHelper
   before_filter :find_project
-  # before_filter :require_login, :check_project_privacy, :only => [:watch, :unwatch]
-  # before_filter :authorize, :only => [:new, :destroy]
 
   def new
   end
@@ -12,12 +12,11 @@ class WatcherGroupsController < ApplicationController
       if params[:object_type] == 'issue'
         issue = Issue.find(params[:object_id])
         group_ids = params[:watcher_group][:group_ids] || [params[:watcher_group][:group_id]]
-
         find_watcher_users = []
         group_ids.each do |group_id|
           group = Group.find(group_id)
-          @watched.set_watcher_group(group, true)
-          find_watcher_users = find_watcher_users | group.users
+          @watched.set_watcher(group, true)
+          find_watcher_users = find_watcher_users | group.users.active
         end
         if find_watcher_users.any? and Redmine::Plugin.installed? :redmine_advanced_issue_history
           notes = []
@@ -37,7 +36,7 @@ class WatcherGroupsController < ApplicationController
   def append
     if params[:watcher_group].is_a?(Hash)
       group_ids = params[:watcher_group][:group_ids] || [params[:watcher_group][:group_id]]
-      @groups = Group.active.find_all_by_id(group_ids)
+      @groups = Group.active.where(:id => group_ids).to_a
     end
   end
 
@@ -45,9 +44,9 @@ class WatcherGroupsController < ApplicationController
     if request.post?
       if params[:object_type] == 'issue'
         group = Group.find(params[:group_id])
-        @watched.set_watcher_group(group, false) 
+        @watched.watchers.where(:user_id => group.id).delete_all
         issue = Issue.find(params[:object_id])
-        group_users = group.users
+        group_users = group.users.active
         if group_users.any?
           if Redmine::Plugin.installed? :redmine_advanced_issue_history
             notes = []
@@ -66,7 +65,7 @@ class WatcherGroupsController < ApplicationController
   end
 
   def autocomplete_for_group
-    @groups = Group.active.like(params[:q]).find(:all, :limit => 100)
+    @groups = Group.active.like(params[:q])
     if @watched
       @groups -= @watched.watcher_groups
     end
@@ -87,11 +86,4 @@ private
     render_404
   end
 
-  def set_watcher_group(group, watching)
-    @watched.set_watcher_group(group, watching)
-    respond_to do |format|
-      format.html { redirect_to_referer_or {render :text => (watching ? 'Watcher group added.' : 'Watcher group removed.'), :layout => true}}
-      format.js { render :partial => 'set_watcher_group', :locals => {:group => group, :watched => @watched} }
-    end
-  end
 end

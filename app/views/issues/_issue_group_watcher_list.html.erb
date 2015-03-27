@@ -1,0 +1,17 @@
+<% if @issue and @issue.new_record? %>
+  <script type="text/javascript">
+    $(document).ready(function() {
+      var watchers_groups_form = '<p id="watchers_groups_form"><label><%= l(:label_issue_watcher_groups) %></label>' +
+                                    '<span>' +
+                                      '<%= watchers_checkboxes(@issue, users_for_new_issue_watchers(@issue).map(&:groups)
+                                                                                                           .flatten
+                                                                                                           .uniq
+                                                                                                           .sort_by(&:name)) %>' +
+                                    '</span>' +
+                                  '</p>';
+      if($("#watchers_form").length > 0) {
+        $("#watchers_form").after(watchers_groups_form);
+      }
+    });
+  </script>
+<% end %>

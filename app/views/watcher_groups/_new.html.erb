@@ -14,10 +14,14 @@
                  :object_type => watched.class.name.underscore,
                  :object_id => watched) }')" %>
 
+  <style type="text/css">
+    #groups_for_watcher {height: 200px; overflow:auto;}
+    #groups_for_watcher label {display: block;}
+    input#group_search {width:90%}
+  </style>
+
   <div id="groups_for_watcher">
-    <%= principals_check_box_tags 'watcher_group[group_ids][]', (
-      # watched ? watched.addable_watcher_groups : 
-      Group.active.all(:limit => 100)) %>
+    <%= principals_check_box_tags 'watcher_group[group_ids][]', (Group.active) %>
   </div>
 
   <p class="buttons">
