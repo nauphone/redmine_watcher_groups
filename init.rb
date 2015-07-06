@@ -16,3 +16,9 @@ Redmine::Plugin.register :redmine_watcher_groups do
 end
 
 include WatcherGroupsHelper
+class WatcherGroupsHookListener < Redmine::Hook::ViewListener
+   def view_layouts_base_body_bottom(context)
+     javascript_include_tag('jquery.columnizer.min.js', :plugin => :redmine_watcher_groups) +
+     javascript_include_tag('autocolums.js', :plugin => :redmine_watcher_groups)
+  end
+end

@@ -1,8 +1,14 @@
 <% if @issue and @issue.new_record? %>
+  <style type="text/css">
+    #watchers_group_inputs {
+      overflow: auto;
+      display: block;
+    }
+  </style>
   <script type="text/javascript">
     $(document).ready(function() {
       var watchers_groups_form = '<p id="watchers_groups_form"><label><%= l(:label_issue_watcher_groups) %></label>' +
-                                    '<span>' +
+                                    '<span id="watchers_group_inputs">' +
                                       '<%= watchers_checkboxes(@issue, users_for_new_issue_watchers(@issue).map(&:groups)
                                                                                                            .flatten
                                                                                                            .uniq
@@ -11,6 +17,8 @@
                                   '</p>';
       if($("#watchers_form").length > 0) {
         $("#watchers_form").after(watchers_groups_form);
+        $('#watchers_group_inputs').columnize({ width: 350 });
+
       }
     });
   </script>
