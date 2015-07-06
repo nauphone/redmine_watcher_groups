@@ -21,7 +21,7 @@
   </style>
 
   <div id="groups_for_watcher">
-    <%= principals_check_box_tags 'watcher_group[group_ids][]', (Group.active) %>
+    <%= principals_check_box_tags 'watcher_group[group_ids][]', (Group.active.sort_by(&:name)) %>
   </div>
 
   <p class="buttons">

@@ -21,7 +21,7 @@ module WatcherGroupsIssuePatch
     def watcher_groups
       if self.id
         watchers = Watcher.where(:watchable_type => self.class, :watchable_id => self.id).to_a
-        return Group.where(:id => watchers.map(&:user_id)).to_a
+        return Group.where(:id => watchers.map(&:user_id)).sort_by(&:name)
       else
         []
       end
